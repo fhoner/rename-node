@@ -4,7 +4,7 @@
   "description": "Rename images to add geo information taken from EXIF metadata",
   "main": "index.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc --project tsconfig.json"
   },
   "author": "Felix Honer",
   "license": "MIT",
@@ -13,11 +13,22 @@
     "exifreader": "^4.31.1",
     "file-type": "^20.5.0",
     "got": "^13.0.0",
+    "luxon": "^3.7.1",
     "ts-is-defined": "^3.0.5",
     "winston": "^3.17.0"
   },
   "devDependencies": {
+    "@types/chai": "^5.2.2",
+    "@types/command-line-args": "^5.2.3",
+    "@types/lodash": "^4.17.20",
+    "@types/luxon": "^3.6.2",
     "@types/node": "^24.0.3",
+    "chai": "^5.2.1",
+    "command-line-args": "^6.0.1",
+    "mocha": "^11.7.1",
+    "prettier": "3.6.2",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.20.3",
     "typescript": "^5.8.3"
   }
 }
