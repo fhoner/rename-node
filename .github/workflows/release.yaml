@@ -12,6 +12,11 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch all tags
+        run: git fetch --tags --force
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -52,6 +57,8 @@ jobs:
       - name: Archive build output
         if: steps.check_tag.outputs.exists == 'false'
         run: |
+          cp package.json dist
+          cp package-lock.json dist
           tar -czvf rename-release.tar.gz -C dist .
 
       - name: Create Release and Upload build artifact
