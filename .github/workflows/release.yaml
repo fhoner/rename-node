@@ -1,0 +1,72 @@
+name: Build and Release
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build the project
+        run: npm run build
+
+      - name: Get version from package.json
+        id: get_version
+        run: |
+          VERSION="v$(node -p "require('./package.json').version")"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Check if tag exists
+        id: check_tag
+        run: |
+          if git rev-parse "$VERSION" >/dev/null 2>&1; then
+            echo "Tag $VERSION already exists."
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "Tag $VERSION does not exist."
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create and push tag
+        if: steps.check_tag.outputs.exists == 'false'
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git tag $VERSION
+          git push origin $VERSION
+
+      - name: Archive build output
+        if: steps.check_tag.outputs.exists == 'false'
+        run: |
+          tar -czvf rename-release.tar.gz -C dist .
+
+      - name: Create Release and Upload build artifact
+        if: steps.check_tag.outputs.exists == 'false'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.VERSION }}
+          name: Release ${{ env.VERSION }}
+          body: 'Automated release with build artifacts.'
+          draft: false
+          prerelease: false
+          files: rename-release.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Skip release if version not increased
+        if: steps.check_tag.outputs.exists == 'true'
+        run: echo "No new version. Skipping release."
